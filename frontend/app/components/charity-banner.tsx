@@ -16,7 +16,7 @@ export default function CharityBanner() {
           <div className="flex h-full flex-col justify-center p-8 text-white md:w-2/3">
             <h2 className="mb-2 text-3xl font-bold">Make a Difference Today</h2>
             <p className="mb-6 text-lg">
-              Your donation can change lives. Join us in our mission to create a better world for everyone.
+              Your donation can change lives. Join us in our mission to create a Absynth for everyone.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/validate">

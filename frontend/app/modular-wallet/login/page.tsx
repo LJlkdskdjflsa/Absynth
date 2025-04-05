@@ -79,7 +79,7 @@ export default function LoginPage() {
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to Better World</CardTitle>
+          <CardTitle className="text-2xl">Welcome to Absynth</CardTitle>
           <CardDescription>Login or create an account to start donating</CardDescription>
         </CardHeader>
         <CardContent>

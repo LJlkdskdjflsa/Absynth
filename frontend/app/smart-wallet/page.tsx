@@ -10,6 +10,7 @@ import {
   type SmartAccountClient,
   createSmartAccountClient
 } from "permissionless"
+import { createPasskeyServerClient } from "permissionless/clients/passkeyServer"
 import {
   type ToKernelSmartAccountReturnType,
   toKernelSmartAccount
@@ -24,7 +25,7 @@ import { baseSepolia } from "viem/chains"
 import { IERC20, ITokenMessenger } from "../abis/abi"
 import { toBytes32 } from "../../utils/chainUtils"
 import { retrieveAttestation } from "@/utils/cctpUtils"
-import { getEthSepoliaHookContract } from "../contracts/eth-sepolia-transaction-hook-contract"
+import { getEthSepoliaHookContract } from "../contracts/sepolia-transaction-hook-contract copy"
 const pimlicoUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
 
 const publicClient = createPublicClient({
@@ -35,6 +36,13 @@ const publicClient = createPublicClient({
 const pimlicoClient = createPimlicoClient({
   chain: baseSepolia,
   transport: http(pimlicoUrl)
+})
+
+const passkeyServerClient = createPasskeyServerClient({
+  chain: baseSepolia,
+  transport: http(
+    pimlicoUrl
+  )
 })
 
 export default function PasskeysDemo() {
@@ -56,45 +64,29 @@ export default function PasskeysDemo() {
   }
 
   const loginWithExistingCredential = async () => {
-    try {
-      // Get existing credential
-      const result = await navigator.credentials.get({
-        publicKey: {
-          challenge: new Uint8Array(32),
-          rpId: window.location.hostname,
-          allowCredentials: [],
-          userVerification: "preferred",
-        },
-      }) as PublicKeyCredential
-
-      if (result) {
-        const response = result.response as AuthenticatorAssertionResponse
-        const publicKey = await crypto.subtle.exportKey(
-          "raw",
-          (response as any).publicKey
-        )
-
-        const credential: P256Credential = {
-          id: result.id,
-          publicKey: bytesToHex(new Uint8Array(publicKey)) as `0x${string}`,
-          raw: result
+    const credentials = await passkeyServerClient.getCredentials(
+      {
+        context: {
+          userName: "Smart Wallet"
         }
-
-        localStorage.setItem(SMART_WALLET_CREDENTIAL, JSON.stringify(credential))
-        setCredential(credential)
       }
-    } catch (error) {
-      console.error("Error logging in with existing credential:", error)
-    }
+    )
+
+    // credentials is an array of credentials that match the userName
+    setCredential(credentials[0])
+    console.log("Credential", credentials[0])
+
+    // local storage
+    localStorage.setItem(SMART_WALLET_CREDENTIAL, JSON.stringify(credentials[0]))
   }
 
-  useEffect(() => {
-    // Only access localStorage on the client side
-    const savedCredential = localStorage.getItem(SMART_WALLET_CREDENTIAL)
-    if (savedCredential) {
-      setCredential(JSON.parse(savedCredential))
-    }
-  }, [])
+  // useEffect(() => {
+  //   // Only access localStorage on the client side
+  //   const savedCredential = localStorage.getItem(SMART_WALLET_CREDENTIAL)
+  //   if (savedCredential) {
+  //     setCredential(JSON.parse(savedCredential))
+  //   }
+  // }, [])
 
   useEffect(() => {
     if (!credential) return
@@ -128,9 +120,29 @@ export default function PasskeysDemo() {
   }, [credential])
 
   const createCredential = async () => {
-    const credential = await createWebAuthnCredential({
-      name: "Smart Wallet"
-    })
+    // const credential = await createWebAuthnCredential({
+    //   name: "Smart Wallet"
+    // })
+    const credential = await createWebAuthnCredential(
+      // Start the registration process
+      await passkeyServerClient.startRegistration({
+        context: {
+          // userName that will be shown to the user when creating the passkey
+          userName: "plusminushalf"
+        }
+      })
+    )
+    // Verify the registration
+    const verifiedCredential = await passkeyServerClient.verifyRegistration(
+      {
+        credential,
+        context: {
+          // userName that will be shown to the user when creating the passkey
+          userName: "plusminushalf"
+        }
+      }
+    )
+    setCredential(verifiedCredential)
     console.log("Credential created", credential)
     localStorage.setItem(SMART_WALLET_CREDENTIAL, JSON.stringify(credential))
     setCredential(credential)
@@ -233,11 +245,16 @@ export default function PasskeysDemo() {
 
   if (!credential)
     return (
-      <button type="button" onClick={createCredential}>
-        Create credential
-        <br />
-        {smartAccountClient?.account.address}
-      </button>
+      <>
+        <button type="button" onClick={createCredential}>
+          Create credential
+          <br />
+          {smartAccountClient?.account.address}
+        </button>
+        <button type="button" onClick={loginWithExistingCredential}>
+          Login with existing credential
+        </button>
+      </>
     )
 
   return (
@@ -254,10 +271,10 @@ export default function PasskeysDemo() {
           <button type="submit">Send</button>
           {txHash && <p>Transaction Hash: {txHash}</p>}
         </form>
-        
+        {/* 
         <button type="button" onClick={handleLogout}>
           Logout
-        </button>
+        </button> */}
       </>
     </div>
   )
