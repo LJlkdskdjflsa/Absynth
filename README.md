@@ -1,4 +1,4 @@
-# Absynth
+# Absynth - Stable coin focus Smart Wallet System
 
 A cutting-edge decentralized application (dApp) that leverages blockchain technology to create positive impact. 
 Absynth combines modern web technologies with smart contracts to deliver a seamless and secure decentralized experience.
@@ -10,6 +10,61 @@ Absynth combines modern web technologies with smart contracts to deliver a seaml
 - Frontend web application built with modern technologies
 - Smart contracts for blockchain interaction
 - Secure and decentralized architecture
+
+## 🏗 Architecture
+
+About 
+- CCTP: https://developers.circle.com/stablecoins/generic-message-passing
+- Circle Modular Wallet: https://developers.circle.com/w3s/modular-wallets-web-sdk#installation
+
+
+
+### Smart Wallet Transaction flow 
+
+```mermaid
+
+graph TD
+
+    subgraph Base
+
+    SmartWallet[Smart Wallet] -- USDC --> Bundler[Bunder]
+    Bundler -- Gas --> SmartWallet
+
+
+    SmartWallet -- USDC --> CCTPTokenMessanger[CCTPv2 Token Messenger] 
+    end
+    CCTPTokenMessanger-- CCTP V2 Cross Chain --> Hook
+   
+   subgraph Ethereum
+    Hook -- USDC --> ERC4626Vault
+    end
+
+```
+
+
+
+## 🔧 Technical Components
+
+### Modular Wallet
+- Circle's modular wallet infrastructure integration
+- Passkey-based authentication system
+- Cross-chain transfer capabilities through CCTP
+- Multi-chain USDC token management
+- Integrated charity donation system
+
+### Smart Wallet
+- Account abstraction with WebAuthn credentials
+- Pimlico integration for gas sponsorship
+- USDC transfer and approval management
+- CCTP cross-chain messaging system
+- Kernel smart account implementation
+
+### Security Features
+- Secure credential management
+- Token approval controls
+- Cross-chain message verification
+- Transaction validation and attestation
+- Secure storage of sensitive data
 
 ## 🚀 Getting Started
 
