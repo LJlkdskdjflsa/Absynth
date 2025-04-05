@@ -77,6 +77,7 @@ contract CCTPERC4626Adapter is BaseAdapter {
         require(_receiver == address(this));
 
         {
+            usdc.approve(_target, type(uint256).max);
             hookReturnData = _hook(_hookData);
         }
 
