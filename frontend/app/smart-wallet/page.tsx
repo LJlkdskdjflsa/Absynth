@@ -24,7 +24,7 @@ import { baseSepolia } from "viem/chains"
 import { IERC20, ITokenMessenger } from "../abis/abi"
 import { toBytes32 } from "../../utils/chainUtils"
 import { retrieveAttestation } from "@/utils/cctpUtils"
-import { getEthSepoliaHookContract } from "../contracts/sepolia-transaction-hook-contract"
+import { getEthSepoliaHookContract } from "../contracts/eth-sepolia-transaction-hook-contract"
 const pimlicoUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
 
 const publicClient = createPublicClient({
@@ -47,6 +47,46 @@ export default function PasskeysDemo() {
   >()
   const [credential, setCredential] = useState<P256Credential | null>(null)
   const [txHash, setTxHash] = useState<Hex>()
+
+  const handleLogout = () => {
+    localStorage.removeItem(SMART_WALLET_CREDENTIAL)
+    setCredential(null)
+    setSmartAccountClient(undefined)
+    setTxHash(undefined)
+  }
+
+  const loginWithExistingCredential = async () => {
+    try {
+      // Get existing credential
+      const result = await navigator.credentials.get({
+        publicKey: {
+          challenge: new Uint8Array(32),
+          rpId: window.location.hostname,
+          allowCredentials: [],
+          userVerification: "preferred",
+        },
+      }) as PublicKeyCredential
+
+      if (result) {
+        const response = result.response as AuthenticatorAssertionResponse
+        const publicKey = await crypto.subtle.exportKey(
+          "raw",
+          (response as any).publicKey
+        )
+
+        const credential: P256Credential = {
+          id: result.id,
+          publicKey: bytesToHex(new Uint8Array(publicKey)) as `0x${string}`,
+          raw: result
+        }
+
+        localStorage.setItem(SMART_WALLET_CREDENTIAL, JSON.stringify(credential))
+        setCredential(credential)
+      }
+    } catch (error) {
+      console.error("Error logging in with existing credential:", error)
+    }
+  }
 
   useEffect(() => {
     // Only access localStorage on the client side
@@ -131,7 +171,7 @@ export default function PasskeysDemo() {
           abi: ITokenMessenger,
           functionName: 'depositForBurnWithHook',
           args: [
-            parseUnits('1', 6), // amount
+            parseUnits('1.05', 6), // 
             0, // dst domain
             toBytes32(ETH_SEPOLIA_TRANSFER_HOOK), // dst mintRecipient
             BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, // src burn token
@@ -143,7 +183,7 @@ export default function PasskeysDemo() {
               functionName: 'transfer',
               args: [
                 "0x9a3f63F053512597d486cA679Ce5A0D13b98C8db",
-                parseUnits('1.05', 6)
+                parseUnits('1', 6)
               ]
             }).slice(2)}`,
 
@@ -214,6 +254,10 @@ export default function PasskeysDemo() {
           <button type="submit">Send</button>
           {txHash && <p>Transaction Hash: {txHash}</p>}
         </form>
+        
+        <button type="button" onClick={handleLogout}>
+          Logout
+        </button>
       </>
     </div>
   )
