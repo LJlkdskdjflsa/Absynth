@@ -5,7 +5,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useWallet } from '../providers/wallet-provider'
 import { donate } from '../services/donation'
+import { crossChainDonate } from '../services/crosschain-donation'
 import { Notification } from './notification'
+import { Badge } from "@/components/ui/badge"
 
 export interface CharityCardProps {
   id: string
@@ -14,9 +16,10 @@ export interface CharityCardProps {
   raised: number
   goal: number
   organizationAddress: string
+  crossChainDonation: boolean
 }
 
-export function CharityCard({ id, title, description, raised, goal, organizationAddress }: CharityCardProps) {
+export function CharityCard({ id, title, description, raised, goal, organizationAddress, crossChainDonation }: CharityCardProps) {
   const { account } = useWallet()
   const [notificationState, setNotificationState] = useState<{
     success?: boolean;
@@ -34,7 +37,13 @@ export function CharityCard({ id, title, description, raised, goal, organization
     }
 
     try {
-      const result = await donate(account, organizationAddress, 1) // 1 USDC donation
+      let result;
+      if (crossChainDonation) {
+        await crossChainDonate(account, 1, organizationAddress); // 1 USDC donation
+        result = { success: true };
+      } else {
+        result = await donate(account, organizationAddress, 1); // 1 USDC donation
+      }
 
       if (result.success) {
         setNotificationState({ success: true })
@@ -65,7 +74,14 @@ export function CharityCard({ id, title, description, raised, goal, organization
             className="h-full w-full object-cover"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-white">{title}</h3>
+              {crossChainDonation && (
+                <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600">
+                  Cross Chain
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <CardContent className="p-4">

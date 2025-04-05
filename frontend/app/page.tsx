@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Shield, Wallet, Heart, History } from "lucide-react"
 import CharityBanner from "./components/charity-banner"
 import { CharityCard } from "./components/charity-card"
-import { CHARITIES } from "./config/settings"
+import { CHARITIES } from "./config/charity-list"
 
 export default function Home() {
   return (
@@ -19,6 +19,7 @@ export default function Home() {
                 <CharityCard
                   key={charity.id}
                   {...charity}
+                  crossChainDonation={charity.crossChainDonation}
                 />
               ))}
             </div>

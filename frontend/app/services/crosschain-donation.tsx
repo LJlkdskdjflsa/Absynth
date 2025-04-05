@@ -1,25 +1,14 @@
 "use client"
 
 import axios from 'axios'
-import "dotenv/config";
-import { sepolia, baseSepolia } from 'viem/chains';
+import { baseSepolia } from 'viem/chains';
 import { IERC20, ITokenMessenger, ITransferAdapter } from '../abis/abi'
-import { type Hex, createWalletClient, encodeFunctionData, getContract, http, parseUnits } from "viem";
+import { createWalletClient, encodeFunctionData, getContract, http, parseUnits } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
-import { useBaseSepoliaSmartAccountBundlerClient } from '../hooks/use-base-sepolia-smart-account-bundler-client';
 import { useEthereumSepoliaSmartAccountBundlerClient } from '../hooks/use-eth-sepolia-smart-account-bundler-client';
 
-// ERC20 ABI for transfer function
 
-interface CrossChainDonationResult {
-    success: boolean
-    error?: string
-    transactionHash?: Hex
-    explorerUrl?: string
-}
-
-export async function crossChainDonate(smartAccount: any, amount: number, organizationAddress: string): Promise<CrossChainDonationResult> {
-
+export async function crossChainDonate(smartAccount: any, amount: number, organizationAddress: string) {
     // ethereum sepolia client
     const { bundlerClient: ethereumSepoliaBundlerClient } = useEthereumSepoliaSmartAccountBundlerClient()
 
@@ -57,7 +46,7 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
     const baseSepoliaClient = createWalletClient({
         chain: baseSepolia,
         transport: http(),
-        account: smartAccount,
+        account: baseMessageSenderAccount,
     });
 
     // contract
@@ -93,8 +82,8 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
                 }
                 console.log('Waiting for attestation...')
                 await new Promise((resolve) => setTimeout(resolve, 5000))
-            } catch (error) {
-                console.error('Error fetching attestation:', error.message)
+            } catch (error: unknown) {
+                console.error('Error fetching attestation:', error instanceof Error ? error.message : String(error))
                 await new Promise((resolve) => setTimeout(resolve, 5000))
             }
         }
@@ -118,7 +107,7 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
         console.log("Approve USDC Data", approveUsdcCall)
 
         const brunUsdcCall = encodeFunctionData({
-            abi: IERC20,
+            abi: ITokenMessenger,
             functionName: 'depositForBurnWithHook',
             args: [
                 parseUnits(amount.toString(), 6), // amount
