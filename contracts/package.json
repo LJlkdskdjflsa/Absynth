@@ -1,0 +1,13 @@
+{
+  "name": "2025-eth-global",
+  "devDependencies": {
+    "@openzeppelin/contracts": "5.2.0",
+    "@openzeppelin/contracts-3.4.2": "npm:@openzeppelin/contracts@3.4.2",
+    "@summa-tx/memview-sol": "github:summa-tx/memview-sol",
+    "axios": "^1.8.4",
+    "dotenv": "^16.4.7",
+    "evm-cctp-contracts": "github:circlefin/evm-cctp-contracts",
+    "forge-std": "github:foundry-rs/forge-std",
+    "viem": "^2.25.0"
+  }
+}

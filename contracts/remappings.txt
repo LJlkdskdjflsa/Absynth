@@ -1,0 +1,5 @@
+@memview-sol/contracts/=node_modules/@summa-tx/memview-sol/contracts/
+@openzeppelin/contracts/=node_modules/@openzeppelin/contracts-3.4.2/
+@openzeppelin/contracts-5.2.0/=node_modules/@openzeppelin/contracts/
+@circle/cctp/=node_modules/evm-cctp-contracts/src/
+forge-std/=node_modules/forge-std/src/
