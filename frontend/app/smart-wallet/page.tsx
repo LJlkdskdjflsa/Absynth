@@ -5,7 +5,7 @@ import {
   createWebAuthnCredential,
   P256Credential,
 } from "viem/account-abstraction"
-import { ANY_CALLER, BASE_SEPOLIA_CCTP_TOKEN_MESSENGER, BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, EHT_SEPOLIA_USDC_CONTRACT_ADDRESS, ETH_SEPOLIA_TRANSFER_HOOK, MIN_CCTP_FINALITY_THRESHOLD, MAX_CCTP_TRASFER_FEE, SMART_WALLET_CREDENTIAL, ETH_SEPOLIA_DOMAIN_ID, BASE_SEPOLIA_DOMAIN_ID } from "../constants"
+import { ANY_CALLER, BASE_SEPOLIA_CCTP_TOKEN_MESSENGER, BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, EHT_SEPOLIA_USDC_CONTRACT_ADDRESS, ETH_SEPOLIA_TRANSFER_HOOK, MIN_CCTP_FINALITY_THRESHOLD, MAX_CCTP_TRASFER_FEE, SMART_WALLET_CREDENTIAL, BASE_SEPOLIA_DOMAIN_ID } from "../constants"
 import {
   type SmartAccountClient,
   createSmartAccountClient
@@ -18,14 +18,13 @@ import {
   entryPoint07Address,
   toWebAuthnAccount
 } from "viem/account-abstraction"
-import { Chain, createPublicClient, encodeFunctionData, getAddress, Hex, http, maxUint256, parseAbi, parseEther, parseUnits, Transport } from "viem"
+import { Chain, createPublicClient, encodeFunctionData, getAddress, Hex, http, maxUint256, parseAbi, parseUnits, Transport } from "viem"
 import { createPimlicoClient } from "permissionless/clients/pimlico"
 import { baseSepolia } from "viem/chains"
 import { IERC20, ITokenMessenger } from "../abis/abi"
 import { toBytes32 } from "../../utils/chainUtils"
 import { retrieveAttestation } from "@/utils/cctpUtils"
-import { getEthSepoliaHookContract, sepolia_transfer_hook_contract } from "../contracts/sepolia-transaction-hook-contract"
-import { getEthSepoliaRedeemClient } from "../clients/eth-sepolia-client"
+import { getEthSepoliaHookContract } from "../contracts/sepolia-transaction-hook-contract"
 const pimlicoUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
 
 const publicClient = createPublicClient({
@@ -102,39 +101,6 @@ export default function PasskeysDemo() {
   ) => {
     event.preventDefault()
     if (!smartAccountClient) return
-
-    const formData = new FormData(event.currentTarget)
-
-    // Create transfer function data for USDC (with 6 decimals)
-    const sendUsdcCall = encodeFunctionData({
-      abi: IERC20,
-      functionName: 'transfer',
-      args: ["0x9a3f63F053512597d486cA679Ce5A0D13b98C8db", parseUnits('1', 6)]
-    })
-
-    const brunUsdcCall = encodeFunctionData({
-      abi: ITokenMessenger,
-      functionName: 'depositForBurnWithHook',
-      args: [
-        parseUnits('1', 6), // amount
-        6, // dst domain
-        toBytes32(ETH_SEPOLIA_TRANSFER_HOOK), // dst mintRecipient
-        BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, // src burn token
-        ANY_CALLER, // dst authorized caller
-        MAX_CCTP_TRASFER_FEE,
-        MIN_CCTP_FINALITY_THRESHOLD,
-        `${EHT_SEPOLIA_USDC_CONTRACT_ADDRESS}${encodeFunctionData({
-          abi: IERC20,
-          functionName: 'transfer',
-          args: [
-            "0x9a3f63F053512597d486cA679Ce5A0D13b98C8db",
-            parseUnits('1', 6)
-          ]
-        }).slice(2)}`,
-
-      ]
-    })
-
     const quotes = await pimlicoClient.getTokenQuotes({
       tokens: [BASE_SEPOLIA_USDC_CONTRACT_ADDRESS]
     })
@@ -177,7 +143,7 @@ export default function PasskeysDemo() {
               functionName: 'transfer',
               args: [
                 "0x9a3f63F053512597d486cA679Ce5A0D13b98C8db",
-                parseUnits('1', 6)
+                parseUnits('1.05', 6)
               ]
             }).slice(2)}`,
 
