@@ -1,10 +1,10 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom/client'
-import { polygonAmoy, arbitrumSepolia } from 'viem/chains'
+import { arbitrumSepolia } from 'viem/chains'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
-
-import { type Hex, createPublicClient, parseEther, parseUnits, encodeFunctionData } from 'viem'
+import { USDC_CONTRACT_ADDRESS } from '../app/constants'
+import { type Hex, createPublicClient, parseUnits, encodeFunctionData } from 'viem'
 import {
   type P256Credential,
   type SmartAccount,
@@ -24,7 +24,6 @@ const clientKey = import.meta.env.VITE_CLIENT_KEY as string
 const clientUrl = import.meta.env.VITE_CLIENT_URL as string
 const policyEngineApiKey = import.meta.env.VITE_POLICY_ENGINE_API_KEY as string
 // USDC contract address on Arbitrum Sepolia
-const USDC_CONTRACT_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d' as const
 
 // ERC20 ABI for transfer function
 const ERC20_ABI = [

@@ -3,24 +3,14 @@
 import { createContext, useContext, useEffect, useState } from "react"
 import { createPublicClient } from 'viem'
 import { arbitrumSepolia } from 'viem/chains'
-import { WebAuthnAccount, toWebAuthnAccount } from 'viem/account-abstraction'
+import { toWebAuthnAccount } from 'viem/account-abstraction'
 import { WebAuthnMode, toCircleSmartAccount, toModularTransport, toPasskeyTransport, toWebAuthnCredential } from '@circle-fin/modular-wallets-core'
+import { USDC_CONTRACT_ADDRESS, USDC_ABI } from '../constants'
 
 // Circle wallet configuration
 const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
 const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 
-// USDC contract configuration
-const USDC_CONTRACT_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'
-const USDC_ABI = [
-  {
-    inputs: [{ name: 'account', type: 'address' }],
-    name: 'balanceOf',
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function'
-  }
-] as const
 
 // Create Circle transports
 const passkeyTransport = toPasskeyTransport(clientUrl, clientKey)

@@ -6,9 +6,9 @@ import { arbitrumSepolia } from 'viem/chains'
 import { toModularTransport } from '@circle-fin/modular-wallets-core'
 import { createBundlerClient } from 'viem/account-abstraction'
 import axios from 'axios'
+import { USDC_CONTRACT_ADDRESS } from '../constants'
 
 // Constants
-const USDC_CONTRACT_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'
 const CLIENT_KEY = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
 const CLIENT_URL = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 const POLICY_ENGINE_API_KEY = process.env.NEXT_PUBLIC_CIRCLE_POLICY_ENGINE_API_KEY as string
@@ -75,6 +75,7 @@ export async function donate(
     console.log("Data", data)
 
     // Send the user operation
+    console.log("Sending user operation...")
     const hash = await bundlerClient.sendUserOperation({
       account,
       calls: [
@@ -86,13 +87,28 @@ export async function donate(
       paymaster: true,
       maxPriorityFeePerGas: BigInt(4762500),
     })
-    console.log("Hash", hash)
-    // Wait for the transaction receipt
-    const { receipt } = await bundlerClient.waitForUserOperationReceipt({
-      hash,
-    })
-    console.log("Receipt", receipt)
+    console.log("User operation hash:", hash)
 
+    // Wait for the transaction receipt with timeout and retry
+    console.log("Waiting for transaction receipt...")
+    let receipt
+    try {
+      const result = await Promise.race([
+        bundlerClient.waitForUserOperationReceipt({
+          hash,
+          timeout: 30000, // 30 seconds timeout
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+        )
+      ]) as { receipt: any }
+      receipt = result.receipt
+    } catch (error) {
+      console.error("Error waiting for receipt:", error)
+      throw new Error('Transaction may have been sent but confirmation timed out. Please check your wallet for status.')
+    }
+
+    console.log("Transaction confirmed! Receipt:", receipt)
     return {
       success: true,
       transactionHash: receipt.transactionHash,
