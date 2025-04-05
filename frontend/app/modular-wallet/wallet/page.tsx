@@ -65,7 +65,7 @@ export default function WalletPage() {
       <div className="mx-auto max-w-2xl">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Your Wallet</h1>
-          <Link href="/">
+          <Link href="/modular-wallet">
             <Button variant="outline">Back to Home</Button>
           </Link>
         </div>

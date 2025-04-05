@@ -9,8 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2, Heart, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { CHARITIES, type CharityKey } from "@/app/config/charity-list"
-import { useWallet } from "@/app/providers/wallet-provider"
+import { CHARITIES, type CharityKey } from "@/app/datas/charity-list-modular"
+import { useWallet } from "@/app/providers/modular-wallet-provider"
 import { donate } from "@/app/services/donation"
 import { toast } from "sonner"
 
@@ -35,7 +35,7 @@ export default function DonatePage({ params }: { params: { id: string } }) {
             <CardDescription>The charity you are looking for does not exist.</CardDescription>
           </CardHeader>
           <CardFooter>
-            <Link href="/">
+            <Link href="/modular-wallet">
               <Button>Return to Home</Button>
             </Link>
           </CardFooter>
@@ -67,7 +67,7 @@ export default function DonatePage({ params }: { params: { id: string } }) {
   }
 
   const handleReturn = () => {
-    router.push("/")
+    router.push("/modular-wallet")
   }
 
   if (success) {

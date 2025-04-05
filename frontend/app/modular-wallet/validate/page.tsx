@@ -37,7 +37,7 @@ export default function ValidatePage() {
   }
 
   const handleComplete = () => {
-    router.push("/")
+    router.push("/modular-wallet")
   }
 
   if (completed) {
@@ -170,7 +170,7 @@ export default function ValidatePage() {
                   Back
                 </Button>
               ) : (
-                <Link href="/">
+                <Link href="/modular-wallet">
                   <Button variant="outline">Cancel</Button>
                 </Link>
               )}

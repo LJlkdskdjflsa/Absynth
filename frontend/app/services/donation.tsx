@@ -37,8 +37,8 @@ export async function donate(
   amount: number
 ): Promise<DonationResult> {
 
-  // const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
-  const { bundlerClient } = useEthereumSepoliaSmartAccountBundlerClient()
+  const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
+  // const { bundlerClient } = useEtherkeumSepoliaSmartAccountBundlerClient()
   try {
     // Screen the organization address
     console.log("Organization address", organizationAddress)

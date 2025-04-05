@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Fingerprint, Key, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useWallet } from "../providers/wallet-provider"
+import { useWallet } from "../../providers/modular-wallet-provider"
 import { toast } from "sonner"
 
 const validateUsername = (username: string | null | undefined) => {
@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       await handlePasskeyLogin()
       toast.success("Successfully logged in!")
-      router.push("/")
+      router.push("/modular-wallet")
     } catch (error) {
       console.error("Login failed:", error)
       toast.error("Login failed. Please try again.")
@@ -61,7 +61,7 @@ export default function LoginPage() {
     try {
       await handleCreateAccount(username)
       toast.success("Account created successfully!")
-      router.push("/")
+      router.push("/modular-wallet")
     } catch (error) {
       console.error("Account creation failed:", error)
       toast.error("Account creation failed. Please try again.")
@@ -71,7 +71,7 @@ export default function LoginPage() {
   }
 
   if (account) {
-    router.push("/")
+    router.push("/modular-wallet")
     return null
   }
 
@@ -79,7 +79,7 @@ export default function LoginPage() {
     <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to CharityChain</CardTitle>
+          <CardTitle className="text-2xl">Welcome to Better World</CardTitle>
           <CardDescription>Login or create an account to start donating</CardDescription>
         </CardHeader>
         <CardContent>

@@ -4,8 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Copy, Check } from "lucide-react"
 import { useState } from "react"
-import { useWallet } from "../providers/wallet-provider"
 import { toast } from "sonner"
+import { useWallet } from "../providers/modular-wallet-provider"
 
 export default function Header() {
   const { account, balance } = useWallet()
@@ -22,8 +22,8 @@ export default function Header() {
   return (
     <header className="border-b">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="text-xl font-bold">
-          CharityChain
+        <Link href="/modular-wallet" className="text-xl font-bold">
+          Better World
         </Link>
         <div className="flex items-center gap-4">
           {account ? (
@@ -41,7 +41,7 @@ export default function Header() {
               )}
             </Button>
           ) : (
-            <Link href="/login">
+            <Link href="/modular-wallet/login">
               <Button variant="outline">Login</Button>
             </Link>
           )}

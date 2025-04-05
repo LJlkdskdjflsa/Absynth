@@ -1,54 +1,10 @@
 "use client"
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Shield, Wallet, Heart, History } from "lucide-react"
-import CharityBanner from "./components/charity-banner"
-import { CharityCard } from "./components/charity-card"
-import { CHARITIES } from "./config/charity-list"
+import { Shield, Wallet, Heart } from "lucide-react"
 
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[1fr_300px]">
-          <div className="space-y-6">
-            <CharityBanner />
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {Object.values(CHARITIES).map((charity) => (
-                <CharityCard
-                  key={charity.id}
-                  {...charity}
-                  crossChainDonation={charity.crossChainDonation}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  Activity History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <ActivityItem type="donation" amount={10} charity="Clean Water Initiative" time="2 hours ago" />
-                  <ActivityItem type="deposit" amount={50} time="1 day ago" />
-                  <ActivityItem type="validation" status="completed" time="1 day ago" />
-                  <ActivityItem type="wallet" action="created" time="1 day ago" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  View All Activity
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </main>
     </div>
   )
 }

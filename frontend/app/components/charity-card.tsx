@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useWallet } from '../providers/wallet-provider'
+import { useWallet } from '../providers/modular-wallet-provider'
 import { donate } from '../services/donation'
 import { crossChainDonate } from '../services/crosschain-donation'
 import { Notification } from './notification'
@@ -39,9 +39,11 @@ export function CharityCard({ id, title, description, raised, goal, organization
     try {
       let result;
       if (crossChainDonation) {
+        console.log("Cross chain donation")
         await crossChainDonate(account, 1, organizationAddress); // 1 USDC donation
         result = { success: true };
       } else {
+        console.log("Donating to", organizationAddress)
         result = await donate(account, organizationAddress, 1); // 1 USDC donation
       }
 
