@@ -1,14 +1,11 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { Shield, Wallet, Heart, History } from "lucide-react"
 import CharityBanner from "./components/charity-banner"
-import { useState } from 'react'
-import { donate } from './services/donation'
-import { Notification } from './components/notification'
-import { useWallet } from './providers/wallet-provider'
+import { CharityCard } from "./components/charity-card"
+import { CHARITIES } from "./config/settings"
 
 export default function Home() {
   return (
@@ -18,38 +15,12 @@ export default function Home() {
           <div className="space-y-6">
             <CharityBanner />
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <CharityCard
-                id="1"
-                title="Clean Water Initiative"
-                description="Providing clean water to communities in need around the world."
-                raised={12500}
-                goal={25000}
-                organizationAddress="0x9a3f63F053512597d486cA679Ce5A0D13b98C8db"
-              />
-              <CharityCard
-                id="2"
-                title="Education for All"
-                description="Supporting education programs for underprivileged children."
-                raised={18750}
-                goal={30000}
-                organizationAddress="0xec838E7f89CE1CF0dB482c963946b5D827964ddE"
-              />
-              <CharityCard
-                id="3"
-                title="Hunger Relief Program"
-                description="Distributing food to families facing food insecurity."
-                raised={8200}
-                goal={15000}
-                organizationAddress="0x046734b1888358760cFE4C45601eb0EdD0aa174D"
-              />
-              <CharityCard
-                id="4"
-                title="Wildlife Conservation"
-                description="Protecting endangered species and their natural habitats."
-                raised={21300}
-                goal={40000}
-                organizationAddress="0x03dF76C8c30A88f424CF3CBBC36A1Ca02763103b"
-              />
+              {Object.values(CHARITIES).map((charity) => (
+                <CharityCard
+                  key={charity.id}
+                  {...charity}
+                />
+              ))}
             </div>
           </div>
           <div>
@@ -78,87 +49,6 @@ export default function Home() {
         </div>
       </main>
     </div>
-  )
-}
-
-interface CharityCardProps {
-  id: string
-  title: string
-  description: string
-  raised: number
-  goal: number
-  organizationAddress: string
-}
-
-function CharityCard({ id, title, description, raised, goal, organizationAddress }: CharityCardProps) {
-  const { account } = useWallet()
-  const [notificationState, setNotificationState] = useState<{
-    success?: boolean;
-    error?: string;
-  }>({})
-
-  const progress = (raised / goal) * 100
-
-  const handleDonate = async () => {
-    if (!account) {
-      setNotificationState({ 
-        error: 'Please connect your wallet first' 
-      })
-      return
-    }
-    
-    try {
-      const result = await donate(account, organizationAddress, 1) // 1 USDC donation
-      
-      if (result.success) {
-        setNotificationState({ success: true })
-        // You can also store or display the explorer URL: result.explorerUrl
-        console.log('Transaction URL:', result.explorerUrl)
-      } else {
-        setNotificationState({ error: result.error })
-      }
-    } catch (error) {
-      setNotificationState({ 
-        error: error instanceof Error ? error.message : 'Failed to process donation' 
-      })
-    }
-  }
-
-  return (
-    <>
-      <Notification 
-        success={notificationState.success}
-        error={notificationState.error}
-        onClose={() => setNotificationState({})}
-      />
-      <Card className="overflow-hidden">
-        <div className="relative h-48 w-full">
-          <img
-            src={`/placeholder.svg?height=200&width=400&text=${encodeURIComponent(title)}`}
-            alt={title}
-            className="h-full w-full object-cover"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-            <h3 className="text-lg font-semibold text-white">{title}</h3>
-          </div>
-        </div>
-        <CardContent className="p-4">
-          <p className="mb-4 text-sm text-muted-foreground">{description}</p>
-          <div className="mb-4">
-            <div className="mb-1 flex justify-between text-sm">
-              <span>Raised: ${raised.toLocaleString()}</span>
-              <span>Goal: ${goal.toLocaleString()}</span>
-            </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
-              <div className="h-full bg-green-500" style={{ width: `${progress}%` }} />
-            </div>
-          </div>
-          <Button className="w-full" onClick={handleDonate}>
-            Donate
-          </Button>
-        </CardContent>
-      </Card>
-    </>
   )
 }
 

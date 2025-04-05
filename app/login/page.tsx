@@ -11,8 +11,22 @@ import { useRouter } from "next/navigation"
 import { useWallet } from "../providers/wallet-provider"
 import { toast } from "sonner"
 
+const validateUsername = (username: string | null | undefined) => {
+  if (!username) {
+    return "Username is required"
+  }
+  if (username.length < 5 || username.length > 50) {
+    return "Username must be between 5 and 50 characters"
+  }
+  if (!/^[a-zA-Z0-9_@.:+-]+$/.test(username)) {
+    return "Username can only contain letters, numbers, and _@.:+- characters"
+  }
+  return null
+}
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
+  const [usernameError, setUsernameError] = useState<string | null>(null)
   const router = useRouter()
   const { account, handlePasskeyLogin, handleCreateAccount } = useWallet()
 
@@ -32,11 +46,18 @@ export default function LoginPage() {
 
   const onCreateAccount = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
+    setUsernameError(null)
 
     const formData = new FormData(e.currentTarget)
     const username = formData.get('name') as string
+    
+    const error = validateUsername(username)
+    if (error) {
+      setUsernameError(error)
+      return
+    }
 
+    setLoading(true)
     try {
       await handleCreateAccount(username)
       toast.success("Account created successfully!")
@@ -78,14 +99,26 @@ export default function LoginPage() {
             <TabsContent value="register" className="mt-4">
               <form onSubmit={onCreateAccount} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" placeholder="John Doe" required />
+                  <Label htmlFor="name">Username</Label>
+                  <Input 
+                    id="name" 
+                    name="name"
+                    placeholder="Enter your username (5-50 characters)" 
+                    required
+                    minLength={5}
+                    maxLength={50}
+                    pattern="[a-zA-Z0-9_@.:+-]+"
+                    onChange={(e) => {
+                      const error = validateUsername(e.target.value)
+                      setUsernameError(error)
+                    }}
+                    className={usernameError ? "border-red-500" : ""}
+                  />
+                  {usernameError && (
+                    <p className="text-sm text-red-500">{usernameError}</p>
+                  )}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
-                </div>
-                <Button type="submit" className="w-full gap-2" disabled={loading}>
+                <Button type="submit" className="w-full gap-2" disabled={loading || !!usernameError}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Key className="h-4 w-4" />}
                   Create Account with Passkey
                 </Button>
