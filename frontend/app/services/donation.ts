@@ -7,6 +7,7 @@ import { toModularTransport } from '@circle-fin/modular-wallets-core'
 import { createBundlerClient } from 'viem/account-abstraction'
 import axios from 'axios'
 import { USDC_CONTRACT_ADDRESS } from '../constants'
+import { useSmartAccountBundlerClient } from '../hooks/use-smart-account-bundler-client'
 
 // Constants
 const CLIENT_KEY = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
@@ -27,19 +28,6 @@ const ERC20_ABI = [
   }
 ] as const
 
-// Create Circle transport and clients
-const modularTransport = toModularTransport(`${CLIENT_URL}/arbitrumSepolia`, CLIENT_KEY)
-
-const client = createPublicClient({
-  chain: arbitrumSepolia,
-  transport: modularTransport,
-})
-
-const bundlerClient = createBundlerClient({
-  chain: arbitrumSepolia,
-  transport: modularTransport,
-})
-
 interface DonationResult {
   success: boolean
   error?: string
@@ -52,6 +40,8 @@ export async function donate(
   organizationAddress: string,
   amount: number
 ): Promise<DonationResult> {
+
+  const { bundlerClient } = useSmartAccountBundlerClient()
   try {
     // Screen the organization address
     console.log("Organization address", organizationAddress)
