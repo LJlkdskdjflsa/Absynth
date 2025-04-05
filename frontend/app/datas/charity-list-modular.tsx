@@ -1,3 +1,4 @@
+"use client"
 export const CHARITIES = {
   CLEAN_WATER: {
     id: "1",
@@ -5,7 +6,7 @@ export const CHARITIES = {
     description: "Providing clean water to communities in need around the world.",
     raised: 12500,
     goal: 25000,
-    organizationAddress: "0x9a3f63F053512597d486cA679Ce5A0D13b98C8db",
+    organizationAddress: "0xDC3713174Cd4A0eeda83a78eaD32845A059c6572",
     crossChainDonation: false
   },
   EDUCATION: {

@@ -86,7 +86,7 @@ export async function donate(
           timeout: 30000, // 30 seconds timeout
         }),
         new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Transaction confirmation timeout')), 30000)
+          setTimeout(() => reject(new Error('Transaction confirmation timeout')), 500000)
         )
       ]) as { receipt: any }
       receipt = result.receipt

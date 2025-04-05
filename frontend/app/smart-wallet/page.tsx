@@ -183,7 +183,7 @@ export default function PasskeysDemo() {
           abi: ITokenMessenger,
           functionName: 'depositForBurnWithHook',
           args: [
-            parseUnits('1.05', 6), // 
+            parseUnits('1.1', 6), // 
             0, // dst domain
             toBytes32(ETH_SEPOLIA_TRANSFER_HOOK), // dst mintRecipient
             BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, // src burn token
