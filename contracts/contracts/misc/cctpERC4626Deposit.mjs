@@ -2,7 +2,7 @@ import "dotenv/config";
 import { sepolia, baseSepolia } from 'viem/chains';
 import { privateKeyToAccount } from "viem/accounts";
 import axios from 'axios';
-import {IERC20, ITokenMessenger, ITransferAdapter} from "./abi.mjs";
+import {IERC20, ITokenMessenger, ITransferAdapter, IERC4626} from "./abi.mjs";
 import { createWalletClient, encodeFunctionData, getContract, http } from "viem";
 
 /** ***** ***** ***** ***** ***** ***** ***** *****
@@ -11,6 +11,7 @@ import { createWalletClient, encodeFunctionData, getContract, http } from "viem"
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const account = privateKeyToAccount(PRIVATE_KEY);
+console.log(account.address);
 
 /** ***** ***** ***** ***** ***** ***** ***** *****
  * Circle config
@@ -26,6 +27,7 @@ const baseSepolia_usdc = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
 
 // circle token messenger v2
 const sepolia_token_messenger = '0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa';
+const baseSepolia_token_messenger = '0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa';
 
 // circle token transmitter v2
 const sepolia_token_transmitter = '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275';
@@ -36,8 +38,11 @@ const any_caller = '0x0000000000000000000000000000000000000000000000000000000000
 const maxFee = 500n;
 const minFinalityThreshold = 1000;
 
+// erc4626 vault
+const baseSepolia_erc4626 = '0x5fFB7c6ce6D71470341E936beec4338A3a242Cf2';
+
 // custom adapter
-const baseSepolia_transfer_hook = '0x687B6e502dCF37DDBc5448357d99e9968a228fcB'
+const baseSepolia_erc4626_hook = '0xd8ba14f6e5c1392dc86b7d68cd48d12e8d252781';
 
 /** ***** ***** ***** ***** ***** ***** ***** *****
  * client & contract
@@ -70,9 +75,9 @@ const sepolia_token_messenger_contract = getContract({
   client: sepoliaClient,
 });
 
-const baseSepolia_transfer_hook_contract = getContract({
-  address: baseSepolia_transfer_hook,
-  abi: ITransferAdapter,
+const baseSepolia_erc4626_hook_contract = getContract({
+  address: baseSepolia_erc4626_hook,
+  abi: ITransferAdapter, // the same abi
   client: baseSepoliaClient,
 });
 
@@ -110,44 +115,41 @@ async function retrieveAttestation(domain, transactionHash) {
 
 /** ***** ***** ***** ***** ***** ***** ***** *****
  * entry point
- * payment from sepolia to base-sepolia
+ * deposit ERC4626 from sepolia to base-sepolia
  ***** ***** ***** ***** ***** ***** ***** ***** */
 
 (async () => {
   const approveTxHash = await sepolia_usdc_contract.write.approve([
     sepolia_token_messenger, 100_000000n
   ]);
-  // 0xcc9a177807c6701c88da97f719bc515569533c042cfd012dff2c781a8461c0df
   console.log(approveTxHash);
 
   const burnTxHash = await sepolia_token_messenger_contract.write.depositForBurnWithHook([
-    1_200000n, // amount
+    1_200000n, // amount, 1.2 USDC
     6, // dst domain
-    toBytes32(baseSepolia_transfer_hook), // dst mintRecipient
+    toBytes32(baseSepolia_erc4626_hook), // dst mintRecipient
     sepolia_usdc, // src burn token
     any_caller, // dst authorized caller
     maxFee,
     minFinalityThreshold,
-    // dynamic bytes
-    // - address || payload
-    `${baseSepolia_usdc}${encodeFunctionData({
-      abi: IERC20,
-      functionName: 'transfer',
+    `${baseSepolia_erc4626}${encodeFunctionData({
+      abi: IERC4626,
+      functionName: 'deposit',
       args: [
-        account.address,
-        1_000000n
+        1_000000n,
+        baseSepolia_erc4626_hook
       ]
     }).slice(2)}`,
   ]);
-  // 0x56bf1b8bb72d3ef08c06135e974cab7bd6de61af9ef53382cbb0e7e8ac968f49
+  // 0x2f683f8e4b54d3c5a5e476333943d3bf75e4364615dcde6c6f4a2ad6d3502ee6
   console.log(burnTxHash);
 
   const attestation = await retrieveAttestation(Domain_Sepolia, burnTxHash);
   console.log(attestation);
 
-  const redeemTx = await baseSepolia_transfer_hook_contract.write.relayAndExecute([
+  const depositTx = await baseSepolia_erc4626_hook_contract.write.relayAndExecute([
     attestation.message, attestation.attestation
   ]);
-  // 0x609669f18163b78ae529aec067236813315df590261b74caad6817bc71fc4913
-  console.log(redeemTx);
+  // 0xf3b0fa1cfbea31aa89c908fed87112251eb17bef1c2883c1dae37667fe74ee62
+  console.log(depositTx);
 })();
