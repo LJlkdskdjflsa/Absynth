@@ -9,20 +9,6 @@ import ImpactGallery from "./components/impact-gallery"
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="text-xl font-bold">CharityChain</div>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="outline">Login</Button>
-            </Link>
-            <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
-              <span className="text-sm font-medium">USDC</span>
-              <span className="font-medium">50.04</span>
-            </div>
-          </div>
-        </div>
-      </header>
       <main className="flex-1">
         <div className="container mx-auto grid grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[1fr_300px]">
           <div className="space-y-6">
@@ -112,7 +98,15 @@ export default function Home() {
   )
 }
 
-function CharityCard({ id, title, description, raised, goal }) {
+interface CharityCardProps {
+  id: string
+  title: string
+  description: string
+  raised: number
+  goal: number
+}
+
+function CharityCard({ id, title, description, raised, goal }: CharityCardProps) {
   const progress = (raised / goal) * 100
 
   return (
@@ -146,14 +140,23 @@ function CharityCard({ id, title, description, raised, goal }) {
   )
 }
 
-function ActivityItem({ type, amount, charity, status, action, time }) {
+interface ActivityItemProps {
+  type: "donation" | "deposit" | "validation" | "wallet"
+  amount?: number
+  charity?: string
+  status?: string
+  action?: string
+  time: string
+}
+
+function ActivityItem({ type, amount, charity, status, action, time }: ActivityItemProps) {
   return (
-    <div className="flex items-start gap-3 rounded-lg border p-3">
-      <div className="rounded-full bg-gray-100 p-1.5">
-        {type === "donation" && <Heart className="h-4 w-4 text-red-500" />}
-        {type === "deposit" && <Wallet className="h-4 w-4 text-blue-500" />}
-        {type === "validation" && <Shield className="h-4 w-4 text-green-500" />}
-        {type === "wallet" && <Wallet className="h-4 w-4 text-purple-500" />}
+    <div className="flex items-center gap-4">
+      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+        {type === "donation" && <Heart className="h-4 w-4" />}
+        {type === "deposit" && <Wallet className="h-4 w-4" />}
+        {type === "validation" && <Shield className="h-4 w-4" />}
+        {type === "wallet" && <Wallet className="h-4 w-4" />}
       </div>
       <div className="flex-1">
         <p className="text-sm font-medium">
