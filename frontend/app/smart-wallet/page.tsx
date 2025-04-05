@@ -5,7 +5,7 @@ import {
   createWebAuthnCredential,
   P256Credential,
 } from "viem/account-abstraction"
-import { BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, SMART_WALLET_CREDENTIAL } from "../constants"
+import { BASE_SEPOLIA_CCTP_TOKEN_MESSENGER, BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, SMART_WALLET_CREDENTIAL } from "../constants"
 import {
   type SmartAccountClient,
   createSmartAccountClient
@@ -100,17 +100,13 @@ export default function PasskeysDemo() {
     if (!smartAccountClient) return
 
     const formData = new FormData(event.currentTarget)
-    const to = formData.get("to") as `0x${string}`
-    const amount = formData.get("value") as string
 
     // Create transfer function data for USDC (with 6 decimals)
-    const data = encodeFunctionData({
+    const sendUsdcCall = encodeFunctionData({
       abi: IERC20,
       functionName: 'transfer',
-      args: ["0x9a3f63F053512597d486cA679Ce5A0D13b98C8db", parseUnits(amount, 6)]
+      args: ["0x9a3f63F053512597d486cA679Ce5A0D13b98C8db", parseUnits('1', 6)]
     })
-
-    console.log("Sending user operation")
 
     const quotes = await pimlicoClient.getTokenQuotes({
       tokens: [BASE_SEPOLIA_USDC_CONTRACT_ADDRESS]
@@ -122,15 +118,24 @@ export default function PasskeysDemo() {
 
     const txHash = await smartAccountClient.sendTransaction({
       calls: [
+        // approve usdc to paymaster
         {
           to: getAddress(BASE_SEPOLIA_USDC_CONTRACT_ADDRESS),
           abi: parseAbi(["function approve(address,uint)"]),
           functionName: "approve",
           args: [paymaster, maxUint256],
         },
+        // approve usdc to cctp token messenger
+        {
+          to: getAddress(BASE_SEPOLIA_USDC_CONTRACT_ADDRESS),
+          abi: parseAbi(["function approve(address,uint)"]),
+          functionName: "approve",
+          args: [BASE_SEPOLIA_CCTP_TOKEN_MESSENGER, maxUint256],
+        },
+        // send usdc to other address
         {
           to: BASE_SEPOLIA_USDC_CONTRACT_ADDRESS,
-          data
+          data: sendUsdcCall
         }
       ],
       paymasterContext: {

@@ -1,7 +1,7 @@
 "use client"
 
 import axios from 'axios'
-import { baseSepolia } from 'viem/chains';
+import { baseSepolia, sepolia } from 'viem/chains';
 import { IERC20, ITokenMessenger, ITransferAdapter } from '../abis/abi'
 import { createWalletClient, encodeFunctionData, getContract, http, parseUnits } from "viem";
 import { privateKeyToAccount } from 'viem/accounts'
@@ -27,6 +27,7 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
 
     // circle token messenger v2
     const sepolia_token_messenger = '0x8fe6b999dc680ccfdd5bf7eb0974218be2542daa';
+    const baseSepolia_token_messenger = '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA';
 
     // circle token transmitter v2
 
@@ -37,24 +38,30 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
 
     // custom adapter
     const baseSepolia_transfer_hook = '0x687B6e502dCF37DDBc5448357d99e9968a228fcB'
+    const sepolia_transfer_hook = '0x8E56E6208F6b5C9F0a81Be2528CE786932947b89';
 
     /** ***** ***** ***** ***** ***** ***** ***** *****
      * client & contract
      ***** ***** ***** ***** ***** ***** ***** ***** */
 
-    // base sepolia client
-    const baseSepoliaClient = createWalletClient({
-        chain: baseSepolia,
+    // base sepolia client 
+    // const baseSepoliaClient = createWalletClient({
+    //     chain: baseSepolia,
+    //     transport: http(),
+    //     account: baseMessageSenderAccount,
+    // });
+    const sepoliaClient = createWalletClient({
+        chain: sepolia,
         transport: http(),
         account: baseMessageSenderAccount,
     });
 
     // contract
 
-    const baseSepolia_transfer_hook_contract = getContract({
-        address: baseSepolia_transfer_hook,
+    const sepolia_transfer_hook_contract = getContract({
+        address: sepolia_transfer_hook,
         abi: ITransferAdapter,
-        client: baseSepoliaClient,
+        client: sepoliaClient
     });
 
     /** ***** ***** ***** ***** ***** ***** ***** *****
@@ -93,87 +100,88 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
      * entry point
      ***** ***** ***** ***** ***** ***** ***** ***** */
 
-    (async () => {
 
-        console.log("Donating to", organizationAddress, "amount", amount)
+    console.log("Donating to", organizationAddress, "amount", amount)
 
-        console.log("Sending approve operation...")
+    console.log("Sending approve operation...")
 
-        // Create transfer function data for USDC (with 6 decimals)
-        const approveUsdcCall = encodeFunctionData({
-            abi: IERC20,
-            functionName: 'approve',
-            args: [
-                sepolia_token_messenger as `0x${string}`, // spender
-                parseUnits(amount.toString(), 6) // value
-            ]
-        })
+    // Create transfer function data for USDC (with 6 decimals)
+    const approveUsdcCall = encodeFunctionData({
+        abi: IERC20,
+        functionName: 'approve',
+        args: [
+            sepolia_token_messenger as `0x${string}`, // spender
+            parseUnits(amount.toString(), 6) // value
+        ]
+    })
 
-        console.log("Approve USDC Data", approveUsdcCall)
+    console.log("Approve USDC Data", approveUsdcCall)
 
-        console.log("Sending approve operation...")
+    console.log("Sending approve operation...")
 
-        const approveTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
-            account: smartAccount,
-            calls: [
-                {
-                    to: sepolia_usdc,
-                    data: approveUsdcCall
-                }
-            ],
-            paymaster: true,
-            maxPriorityFeePerGas: BigInt(4762500),
-        })
-        console.log("Approve tx hash:", approveTxHash)
+    const approveTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
+        account: smartAccount,
+        calls: [
+            {
+                to: sepolia_usdc,
+                data: approveUsdcCall
+            }
+        ],
+        paymaster: true,
+        maxPriorityFeePerGas: BigInt(4762500),
+    })
+    console.log("Approve tx hash:", approveTxHash)
 
-
-        const brunUsdcCall = encodeFunctionData({
-            abi: ITokenMessenger,
-            functionName: 'depositForBurnWithHook',
-            args: [
-                parseUnits(amount.toString(), 6), // amount
-                6, // dst domain
-                toBytes32(baseSepolia_transfer_hook), // dst mintRecipient
-                sepolia_usdc, // src burn token
-                any_caller, // dst authorized caller
-                maxFee,
-                minFinalityThreshold,
-                `${baseSepolia_usdc}${encodeFunctionData({
-                    abi: IERC20,
-                    functionName: 'transfer',
-                    args: [
-                        organizationAddress,
-                        parseUnits(amount.toString(), 6)
-                    ]
-                }).slice(2)}`,
-
-            ]
-        })
-        console.log("Burn USDC Data", brunUsdcCall)
-
-        // Send the user operation
-        console.log("Sending burn operation...")
-        const burnTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
-            account: smartAccount,
-            calls: [
-                {
-                    to: sepolia_token_messenger,
-                    data: brunUsdcCall
-                }
-            ],
-            paymaster: true,
-            maxPriorityFeePerGas: BigInt(4762500),
-        })
-        console.log("Burn tx hash:", burnTxHash)
+    // wait for approve tx to be mined, wait for 10 seconds
+    await new Promise((resolve) => setTimeout(resolve, 10000))
 
 
+    const brunUsdcCall = encodeFunctionData({
+        abi: ITokenMessenger,
+        functionName: 'depositForBurnWithHook',
+        args: [
+            parseUnits(amount.toString(), 6), // amount
+            6, // dst domain
+            toBytes32(baseSepolia_transfer_hook), // dst mintRecipient
+            sepolia_usdc, // src burn token
+            any_caller, // dst authorized caller
+            maxFee,
+            minFinalityThreshold,
+            `${sepolia_usdc}${encodeFunctionData({
+                abi: IERC20,
+                functionName: 'transfer',
+                args: [
+                    organizationAddress,
+                    parseUnits(amount.toString(), 6)
+                ]
+            }).slice(2)}`,
 
-        const attestation = await retrieveAttestation(Domain_Sepolia.toString(), burnTxHash);
-        console.log("Attestation", attestation);
+        ]
+    })
+    console.log("Burn USDC Data", brunUsdcCall)
 
-        const redeemTx = await baseSepolia_transfer_hook_contract.write.relayAndExecute([
-            attestation.message, attestation.attestation
-        ]);
-        console.log("Redeem Tx", redeemTx);
-    })()
+    // Send the user operation
+    console.log("Sending burn operation...")
+    const burnTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
+        account: smartAccount,
+        calls: [
+            {
+                to: sepolia_token_messenger,
+                data: brunUsdcCall
+            }
+        ],
+        paymaster: true,
+        maxPriorityFeePerGas: BigInt(4762500),
+    })
+    console.log("Burn tx hash:", burnTxHash)
+
+
+
+    const attestation = await retrieveAttestation(Domain_Sepolia.toString(), burnTxHash);
+    console.log("Attestation", attestation);
+
+    const redeemTx = await sepolia_transfer_hook_contract.write.relayAndExecute([
+        attestation.message, attestation.attestation
+    ]);
+    console.log("Redeem Tx", redeemTx);
 }
