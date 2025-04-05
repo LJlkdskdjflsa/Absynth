@@ -1,17 +1,12 @@
 "use client"
 
 import { v4 as uuidv4 } from 'uuid'
-import { type Hex, createPublicClient, parseUnits, encodeFunctionData } from 'viem'
-import { arbitrumSepolia } from 'viem/chains'
-import { toModularTransport } from '@circle-fin/modular-wallets-core'
-import { createBundlerClient } from 'viem/account-abstraction'
+import { type Hex, parseUnits, encodeFunctionData } from 'viem'
 import axios from 'axios'
 import { USDC_CONTRACT_ADDRESS } from '../constants'
-import { useSmartAccountBundlerClient } from '../hooks/use-smart-account-bundler-client'
+import { useArbitrumSepoliaSmartAccountBundlerClient } from '../hooks/use-arbitrum-sepolia-smart-account-bundler-client'
 
 // Constants
-const CLIENT_KEY = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
-const CLIENT_URL = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 const POLICY_ENGINE_API_KEY = process.env.NEXT_PUBLIC_CIRCLE_POLICY_ENGINE_API_KEY as string
 
 // ERC20 ABI for transfer function
@@ -41,7 +36,7 @@ export async function donate(
   amount: number
 ): Promise<DonationResult> {
 
-  const { bundlerClient } = useSmartAccountBundlerClient()
+  const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
   try {
     // Screen the organization address
     console.log("Organization address", organizationAddress)
