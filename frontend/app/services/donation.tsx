@@ -5,6 +5,7 @@ import { type Hex, parseUnits, encodeFunctionData } from 'viem'
 import axios from 'axios'
 import { USDC_CONTRACT_ADDRESS } from '../constants'
 import { useArbitrumSepoliaSmartAccountBundlerClient } from '../hooks/use-arbitrum-sepolia-smart-account-bundler-client'
+import { useEthereumSepoliaSmartAccountBundlerClient } from '../hooks/use-eth-sepolia-smart-account-bundler-client'
 
 // Constants
 const POLICY_ENGINE_API_KEY = process.env.NEXT_PUBLIC_CIRCLE_POLICY_ENGINE_API_KEY as string
@@ -36,7 +37,8 @@ export async function donate(
   amount: number
 ): Promise<DonationResult> {
 
-  const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
+  // const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
+  const { bundlerClient } = useEthereumSepoliaSmartAccountBundlerClient()
   try {
     // Screen the organization address
     console.log("Organization address", organizationAddress)
