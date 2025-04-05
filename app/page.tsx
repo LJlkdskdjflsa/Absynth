@@ -3,8 +3,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import Link from "next/link"
 import { Shield, Wallet, Heart, History } from "lucide-react"
 import CharityBanner from "./components/charity-banner"
-import FeaturedCharity from "./components/featured-charity"
-import ImpactGallery from "./components/impact-gallery"
 
 export default function Home() {
   return (
@@ -13,28 +11,6 @@ export default function Home() {
         <div className="container mx-auto grid grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[1fr_300px]">
           <div className="space-y-6">
             <CharityBanner />
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-green-500" />
-                  Validation Required
-                </CardTitle>
-                <CardDescription>
-                  Please complete the validation process to ensure compliance with our donation policies.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-lg border border-dashed p-8 text-center">
-                  <h3 className="mb-2 text-lg font-medium">Validate you are non-criminal</h3>
-                  <p className="mb-4 text-sm text-muted-foreground">
-                    This verification helps ensure all donations are from legitimate sources.
-                  </p>
-                  <Link href="/validate">
-                    <Button>Start Validation</Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <CharityCard
                 id="1"
@@ -65,9 +41,6 @@ export default function Home() {
                 goal={40000}
               />
             </div>
-
-            <FeaturedCharity />
-            <ImpactGallery />
           </div>
           <div>
             <Card>
@@ -170,4 +143,3 @@ function ActivityItem({ type, amount, charity, status, action, time }: ActivityI
     </div>
   )
 }
-
