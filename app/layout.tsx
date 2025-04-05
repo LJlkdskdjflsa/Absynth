@@ -1,20 +1,31 @@
 import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
+import { WalletProvider } from './providers/wallet-provider'
+import Header from './components/header'
+import { Toaster } from 'sonner'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.dev',
+  title: 'CharityChain',
+  description: 'Make a difference with transparent and secure donations',
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <WalletProvider>
+          <Header />
+          {children}
+          <Toaster />
+        </WalletProvider>
+      </body>
     </html>
   )
 }
