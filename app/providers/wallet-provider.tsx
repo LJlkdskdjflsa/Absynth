@@ -10,6 +10,18 @@ import { WebAuthnMode, toCircleSmartAccount, toModularTransport, toPasskeyTransp
 const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
 const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 
+// USDC contract configuration
+const USDC_CONTRACT_ADDRESS = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d'
+const USDC_ABI = [
+  {
+    inputs: [{ name: 'account', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function'
+  }
+] as const
+
 // Create Circle transports
 const passkeyTransport = toPasskeyTransport(clientUrl, clientKey)
 const modularTransport = toModularTransport(`${clientUrl}/arbitrumSepolia`, clientKey)
@@ -25,15 +37,18 @@ type WalletContextType = {
   loading: boolean
   credential: any | null
   username: string | undefined
+  balance: string
   handlePasskeyLogin: () => Promise<void>
   handleCreateAccount: (username: string) => Promise<void>
   disconnect: () => void
+  refreshBalance: () => Promise<void>
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined)
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false)
+  const [balance, setBalance] = useState('0')
   const [credential, setCredential] = useState(() => {
     if (typeof window !== 'undefined') {
       return JSON.parse(localStorage.getItem('credential') || 'null')
@@ -58,6 +73,34 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       name: username,
     }).then(setAccount)
   }, [credential])
+
+  // Add effect to fetch balance when account changes
+  useEffect(() => {
+    if (account) {
+      refreshBalance()
+    } else {
+      setBalance('0')
+    }
+  }, [account])
+
+  const refreshBalance = async () => {
+    if (!account) return
+
+    try {
+      const balance = await client.readContract({
+        address: USDC_CONTRACT_ADDRESS,
+        abi: USDC_ABI,
+        functionName: 'balanceOf',
+        args: [account.address]
+      })
+      
+      // Convert from wei (6 decimals for USDC)
+      setBalance((Number(balance) / 1e6).toString())
+    } catch (error) {
+      console.error('Error fetching balance:', error)
+      setBalance('0')
+    }
+  }
 
   const handlePasskeyLogin = async () => {
     setLoading(true)
@@ -113,9 +156,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         loading,
         credential,
         username,
+        balance,
         handlePasskeyLogin,
         handleCreateAccount,
         disconnect,
+        refreshBalance
       }}
     >
       {children}

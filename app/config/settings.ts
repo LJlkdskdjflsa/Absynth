@@ -9,11 +9,11 @@ export const CHARITIES = {
   },
   EDUCATION: {
     id: "2",
-    title: "Education for All",
+    title: "Education for All (Melicius Organization)",
     description: "Supporting education programs for underprivileged children.",
     raised: 18750,
     goal: 30000,
-    organizationAddress: "0xec838E7f89CE1CF0dB482c963946b5D827964ddE"
+    organizationAddress: "0x7fb49965753A9eC3646fd5d004ee5AeD6Cc89999"
   },
   HUNGER_RELIEF: {
     id: "3",

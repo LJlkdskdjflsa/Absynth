@@ -27,15 +27,15 @@ export function CharityCard({ id, title, description, raised, goal, organization
 
   const handleDonate = async () => {
     if (!account) {
-      setNotificationState({ 
-        error: 'Please connect your wallet first' 
+      setNotificationState({
+        error: 'Please connect your wallet first'
       })
       return
     }
-    
+
     try {
       const result = await donate(account, organizationAddress, 1) // 1 USDC donation
-      
+
       if (result.success) {
         setNotificationState({ success: true })
         // You can also store or display the explorer URL: result.explorerUrl
@@ -44,15 +44,15 @@ export function CharityCard({ id, title, description, raised, goal, organization
         setNotificationState({ error: result.error })
       }
     } catch (error) {
-      setNotificationState({ 
-        error: error instanceof Error ? error.message : 'Failed to process donation' 
+      setNotificationState({
+        error: error instanceof Error ? error.message : 'Failed to process donation'
       })
     }
   }
 
   return (
     <>
-      <Notification 
+      <Notification
         success={notificationState.success}
         error={notificationState.error}
         onClose={() => setNotificationState({})}

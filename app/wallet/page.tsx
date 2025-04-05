@@ -8,23 +8,27 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Wallet, ArrowDownToLine, ArrowUpFromLine, Copy, CheckCircle, Loader2, Heart } from "lucide-react"
 import Link from "next/link"
+import { useWallet } from "../providers/wallet-provider"
+import TransactionHistoryItem from "../components/transaction-history-item"
 
 export default function WalletPage() {
+  const { account, balance, refreshBalance } = useWallet()
   const [copied, setCopied] = useState(false)
   const [depositAmount, setDepositAmount] = useState("")
   const [withdrawAmount, setWithdrawAmount] = useState("")
   const [loading, setLoading] = useState(false)
 
-  const walletAddress = "0x1a2b3c4d5e6f7g8h9i0j1k2l3m4n5o6p7q8r9s0t"
-  const balance = 50.04
+  const walletAddress = account?.address
+  const numericBalance = Number(balance)
 
   const copyToClipboard = () => {
+    if (!walletAddress) return
     navigator.clipboard.writeText(walletAddress)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDeposit = async (e) => {
+  const handleDeposit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
 
@@ -32,7 +36,7 @@ export default function WalletPage() {
       // Simulate deposit process
       await new Promise((resolve) => setTimeout(resolve, 1500))
       setDepositAmount("")
-      // In a real app, you would update the balance here
+      await refreshBalance()
     } catch (error) {
       console.error("Deposit failed:", error)
     } finally {
@@ -40,7 +44,7 @@ export default function WalletPage() {
     }
   }
 
-  const handleWithdraw = async (e) => {
+  const handleWithdraw = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
 
@@ -48,7 +52,7 @@ export default function WalletPage() {
       // Simulate withdrawal process
       await new Promise((resolve) => setTimeout(resolve, 1500))
       setWithdrawAmount("")
-      // In a real app, you would update the balance here
+      await refreshBalance()
     } catch (error) {
       console.error("Withdrawal failed:", error)
     } finally {
@@ -76,7 +80,7 @@ export default function WalletPage() {
             </CardHeader>
             <CardContent>
               <div className="mb-4 text-center">
-                <div className="text-3xl font-bold">{balance.toFixed(2)} USDC</div>
+                <div className="text-3xl font-bold">{numericBalance.toFixed(2)} USDC</div>
                 <div className="text-sm text-muted-foreground">Available for donations</div>
               </div>
               <div className="rounded-lg border p-4">
@@ -96,7 +100,7 @@ export default function WalletPage() {
                     )}
                   </Button>
                 </div>
-                <div className="overflow-x-auto rounded bg-gray-100 p-2 text-xs font-mono">{walletAddress}</div>
+                <div className="overflow-x-auto rounded bg-gray-100 p-2 text-xs font-mono">{walletAddress || 'Not connected'}</div>
               </div>
             </CardContent>
           </Card>
@@ -132,7 +136,7 @@ export default function WalletPage() {
                         <h3 className="mb-2 text-sm font-medium">Deposit Instructions</h3>
                         <p className="mb-4 text-xs text-muted-foreground">Send USDC to your wallet address:</p>
                         <div className="mb-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs font-mono">
-                          {walletAddress}
+                          {walletAddress || 'Not connected'}
                         </div>
                         <p className="text-xs text-muted-foreground">
                           Your balance will be updated once the transaction is confirmed.
@@ -159,7 +163,7 @@ export default function WalletPage() {
                           type="number"
                           placeholder="10.00"
                           min="1"
-                          max={balance}
+                          max={numericBalance}
                           step="0.01"
                           value={withdrawAmount}
                           onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -173,7 +177,7 @@ export default function WalletPage() {
                       <Button
                         type="submit"
                         className="w-full gap-2"
-                        disabled={loading || !withdrawAmount || Number(withdrawAmount) > balance}
+                        disabled={loading || !withdrawAmount || Number(withdrawAmount) > numericBalance}
                       >
                         {loading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -199,6 +203,7 @@ export default function WalletPage() {
                 <TransactionHistoryItem
                   type="donation"
                   amount={10}
+                  source="Your Wallet"
                   destination="Clean Water Initiative"
                   date="Apr 4, 2025"
                   time="3:15 PM"
@@ -207,12 +212,14 @@ export default function WalletPage() {
                   type="deposit"
                   amount={50}
                   source="External Wallet"
+                  destination="Your Wallet"
                   date="Apr 3, 2025"
                   time="10:22 AM"
                 />
                 <TransactionHistoryItem
                   type="withdrawal"
                   amount={5}
+                  source="Your Wallet"
                   destination="External Wallet"
                   date="Apr 1, 2025"
                   time="2:45 PM"

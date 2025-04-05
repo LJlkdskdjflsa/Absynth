@@ -8,7 +8,7 @@ import { useWallet } from "../providers/wallet-provider"
 import { toast } from "sonner"
 
 export default function Header() {
-  const { account } = useWallet()
+  const { account, balance } = useWallet()
   const [copied, setCopied] = useState(false)
 
   const copyAddress = async () => {
@@ -47,7 +47,7 @@ export default function Header() {
           )}
           <div className="flex items-center gap-2 rounded-md border px-3 py-1.5">
             <span className="text-sm font-medium">USDC</span>
-            <span className="font-medium">50.04</span>
+            <span className="font-medium">{Number(balance).toFixed(2)}</span>
           </div>
         </div>
       </div>
