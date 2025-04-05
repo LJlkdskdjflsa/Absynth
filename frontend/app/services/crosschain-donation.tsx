@@ -95,16 +95,37 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
 
     (async () => {
 
+        console.log("Donating to", organizationAddress, "amount", amount)
+
+        console.log("Sending approve operation...")
+
         // Create transfer function data for USDC (with 6 decimals)
         const approveUsdcCall = encodeFunctionData({
             abi: IERC20,
             functionName: 'approve',
             args: [
-                sepolia_token_messenger as `0x${string}`,
-                parseUnits(amount.toString(), 6)
+                sepolia_token_messenger as `0x${string}`, // spender
+                parseUnits(amount.toString(), 6) // value
             ]
         })
+
         console.log("Approve USDC Data", approveUsdcCall)
+
+        console.log("Sending approve operation...")
+
+        const approveTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
+            account: smartAccount,
+            calls: [
+                {
+                    to: sepolia_usdc,
+                    data: approveUsdcCall
+                }
+            ],
+            paymaster: true,
+            maxPriorityFeePerGas: BigInt(4762500),
+        })
+        console.log("Approve tx hash:", approveTxHash)
+
 
         const brunUsdcCall = encodeFunctionData({
             abi: ITokenMessenger,
@@ -128,30 +149,13 @@ export async function crossChainDonate(smartAccount: any, amount: number, organi
 
             ]
         })
-        console.log("Approve USDC Data", approveUsdcCall)
-
-        const approveTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
-            account: smartAccount,
-            calls: [
-                {
-                    to: sepolia_token_messenger,
-                    data: brunUsdcCall
-                }
-            ],
-            paymaster: true,
-            maxPriorityFeePerGas: BigInt(4762500),
-        })
-        console.log("Approve tx hash:", approveTxHash)
+        console.log("Burn USDC Data", brunUsdcCall)
 
         // Send the user operation
-        console.log("Sending user operation...")
+        console.log("Sending burn operation...")
         const burnTxHash = await ethereumSepoliaBundlerClient.sendUserOperation({
             account: smartAccount,
             calls: [
-                {
-                    to: sepolia_usdc,
-                    data: approveUsdcCall
-                },
                 {
                     to: sepolia_token_messenger,
                     data: brunUsdcCall
