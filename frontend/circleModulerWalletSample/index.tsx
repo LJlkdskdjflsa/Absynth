@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom/client'
 import { arbitrumSepolia } from 'viem/chains'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
-import { USDC_CONTRACT_ADDRESS } from '../app/constants'
+import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS } from '../app/constants'
 import { type Hex, createPublicClient, parseUnits, encodeFunctionData } from 'viem'
 import {
   type P256Credential,
@@ -166,7 +166,7 @@ function Example() {
       account,
       calls: [
         {
-          to: USDC_CONTRACT_ADDRESS,
+          to: ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS,
           data
         },
       ],

@@ -3,7 +3,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { type Hex, parseUnits, encodeFunctionData } from 'viem'
 import axios from 'axios'
-import { USDC_CONTRACT_ADDRESS } from '../constants'
+import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS } from '../constants'
 import { useArbitrumSepoliaSmartAccountBundlerClient } from '../hooks/use-arbitrum-sepolia-smart-account-bundler-client'
 import { useEthereumSepoliaSmartAccountBundlerClient } from '../hooks/use-eth-sepolia-smart-account-bundler-client'
 
@@ -67,7 +67,7 @@ export async function donate(
       account,
       calls: [
         {
-          to: USDC_CONTRACT_ADDRESS,
+          to: ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS,
           data
         },
       ],

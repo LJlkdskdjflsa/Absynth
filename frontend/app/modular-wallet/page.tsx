@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button"
 import { Shield, Wallet, Heart, History } from "lucide-react"
 import CharityBanner from "../components/charity-banner"
-import { CharityCard } from "../components/charity-card"
+import { CharityCard } from "../components/modular-wallet/charity-card"
 import { CHARITIES } from "../datas/charity-list-modular"
 
 export default function Home() {

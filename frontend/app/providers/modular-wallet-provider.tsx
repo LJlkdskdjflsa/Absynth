@@ -5,7 +5,7 @@ import { createPublicClient } from 'viem'
 import { arbitrumSepolia } from 'viem/chains'
 import { toWebAuthnAccount } from 'viem/account-abstraction'
 import { WebAuthnMode, toCircleSmartAccount, toModularTransport, toPasskeyTransport, toWebAuthnCredential } from '@circle-fin/modular-wallets-core'
-import { USDC_CONTRACT_ADDRESS, USDC_ABI } from '../constants'
+import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS, USDC_ABI } from '../constants'
 
 // Circle wallet configuration
 const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
@@ -78,7 +78,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const balance = await client.readContract({
-        address: USDC_CONTRACT_ADDRESS,
+        address: ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS,
         abi: USDC_ABI,
         functionName: 'balanceOf',
         args: [account.address]

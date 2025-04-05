@@ -3,10 +3,10 @@
 import { useState } from 'react'
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { useWallet } from '../providers/modular-wallet-provider'
-import { donate } from '../services/donation'
-import { crossChainDonate } from '../services/crosschain-donation'
-import { Notification } from './notification'
+import { useWallet } from '../../providers/modular-wallet-provider'
+import { donate } from '../../services/donation'
+import { crossChainDonate } from '../../services/crosschain-donation'
+import { Notification } from '../notification'
 import { Badge } from "@/components/ui/badge"
 
 export interface CharityCardProps {

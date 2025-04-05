@@ -1,85 +1,191 @@
 "use client"
 
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Shield, Wallet, Heart, History } from "lucide-react"
-import CharityBanner from "../components/charity-banner"
-import { CharityCard } from "../components/charity-card"
-import { CHARITIES } from "../datas/charity-list-modular"
+import { useEffect, useState } from "react"
+import {
+  createWebAuthnCredential,
+  P256Credential,
+} from "viem/account-abstraction"
+import { BASE_SEPOLIA_USDC_CONTRACT_ADDRESS, SMART_WALLET_CREDENTIAL } from "../constants"
+import {
+  type SmartAccountClient,
+  createSmartAccountClient
+} from "permissionless"
+import {
+  type ToKernelSmartAccountReturnType,
+  toKernelSmartAccount
+} from "permissionless/accounts"
+import {
+  entryPoint07Address,
+  toWebAuthnAccount
+} from "viem/account-abstraction"
+import { Chain, createPublicClient, encodeFunctionData, getAddress, Hex, http, maxUint256, parseAbi, parseEther, parseUnits, Transport } from "viem"
+import { createPimlicoClient } from "permissionless/clients/pimlico"
+import { baseSepolia } from "viem/chains"
+import { IERC20 } from "../abis/abi"
+const pimlicoUrl = `https://api.pimlico.io/v2/${baseSepolia.id}/rpc?apikey=${process.env.NEXT_PUBLIC_PIMLICO_API_KEY}`
 
-export default function Home() {
+const publicClient = createPublicClient({
+  chain: baseSepolia,
+  transport: http("https://sepolia.base.org")
+})
+
+const pimlicoClient = createPimlicoClient({
+  chain: baseSepolia,
+  transport: http(pimlicoUrl)
+})
+
+export default function PasskeysDemo() {
+
+  const [smartAccountClient, setSmartAccountClient] = useState<SmartAccountClient<
+    Transport,
+    Chain,
+    ToKernelSmartAccountReturnType<"0.7">
+  >
+  >()
+  const [credential, setCredential] = useState<P256Credential | null>(null)
+  const [txHash, setTxHash] = useState<Hex>()
+
+  useEffect(() => {
+    // Only access localStorage on the client side
+    const savedCredential = localStorage.getItem(SMART_WALLET_CREDENTIAL)
+    if (savedCredential) {
+      setCredential(JSON.parse(savedCredential))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!credential) return
+
+    console.log("Creating smart account client")
+    toKernelSmartAccount({
+      client: publicClient,
+      version: "0.3.1",
+      owners: [toWebAuthnAccount({ credential })],
+      entryPoint: {
+        address: entryPoint07Address,
+        version: "0.7"
+      }
+    }).then((account: ToKernelSmartAccountReturnType<"0.7">) => {
+      console.log("Smart account created", account)
+      setSmartAccountClient(
+        createSmartAccountClient({
+          account,
+          paymaster: pimlicoClient,
+          chain: baseSepolia,
+          userOperation: {
+            estimateFeesPerGas: async () =>
+              (await pimlicoClient.getUserOperationGasPrice())
+                .fast
+          },
+          bundlerTransport: http(pimlicoUrl)
+        })
+      )
+      console.log("Smart account client created", smartAccountClient)
+    })
+  }, [credential])
+
+  const createCredential = async () => {
+    const credential = await createWebAuthnCredential({
+      name: "Smart Wallet"
+    })
+    console.log("Credential created", credential)
+    localStorage.setItem(SMART_WALLET_CREDENTIAL, JSON.stringify(credential))
+    setCredential(credential)
+  }
+
+  const sendUserOperation = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault()
+    if (!smartAccountClient) return
+
+    const formData = new FormData(event.currentTarget)
+    const to = formData.get("to") as `0x${string}`
+    const amount = formData.get("value") as string
+
+    // Create transfer function data for USDC (with 6 decimals)
+    const data = encodeFunctionData({
+      abi: IERC20,
+      functionName: 'transfer',
+      args: ["0x9a3f63F053512597d486cA679Ce5A0D13b98C8db", parseUnits(amount, 6)]
+    })
+
+    console.log("Sending user operation")
+
+    const quotes = await pimlicoClient.getTokenQuotes({
+      tokens: [BASE_SEPOLIA_USDC_CONTRACT_ADDRESS]
+    })
+    console.log("Quotes", quotes)
+    const paymaster = quotes[0].paymaster
+
+    console.log("Paymaster", paymaster)
+
+    const txHash = await smartAccountClient.sendTransaction({
+      calls: [
+        {
+          to: getAddress(BASE_SEPOLIA_USDC_CONTRACT_ADDRESS),
+          abi: parseAbi(["function approve(address,uint)"]),
+          functionName: "approve",
+          args: [paymaster, maxUint256],
+        },
+        {
+          to: BASE_SEPOLIA_USDC_CONTRACT_ADDRESS,
+          data
+        }
+      ],
+      paymasterContext: {
+        token: BASE_SEPOLIA_USDC_CONTRACT_ADDRESS,
+      }
+    })
+    setTxHash(txHash)
+  }
+
+  // const senderUsdcBalance = async () => {
+  //   const senderUsdcBalance = await publicClient.readContract({
+  //     abi: parseAbi(["function balanceOf(address account) returns (uint256)"]),
+  //     address: BASE_SEPOLIA_USDC_CONTRACT_ADDRESS,
+  //     functionName: "balanceOf",
+  //     args: [smartAccountClient?.account.address],
+  //   })
+  //   return senderUsdcBalance
+  // }
+
+  // const checkUsdcBalance = async () => {
+  //   const balance = await senderUsdcBalance();
+  //   if (Number(balance) < 1_000_000) {
+  //     throw new Error(
+  //       `insufficient USDC balance for counterfactual wallet address ${smartAccountClient?.account.address}: ${Number(balance) / 1_000_000
+  //       } USDC, required at least 1 USDC. Load up balance at https://faucet.circle.com/`
+  //     )
+  //   }
+  // }
+
+  // console.log("Smart account USDC balance: ", Number(senderUsdcBalance) / 1_000_000)
+
+  if (!credential)
+    return (
+      <button type="button" onClick={createCredential}>
+        Create credential
+        <br />
+        {smartAccountClient?.account.address}
+      </button>
+    )
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[1fr_300px]">
-          <div className="space-y-6">
-            <CharityBanner />
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {Object.values(CHARITIES).map((charity) => (
-                <CharityCard
-                  key={charity.id}
-                  {...charity}
-                  crossChainDonation={charity.crossChainDonation}
-                />
-              ))}
-            </div>
-          </div>
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <History className="h-5 w-5" />
-                  Activity History
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <ActivityItem type="donation" amount={10} charity="Clean Water Initiative" time="2 hours ago" />
-                  <ActivityItem type="deposit" amount={50} time="1 day ago" />
-                  <ActivityItem type="validation" status="completed" time="1 day ago" />
-                  <ActivityItem type="wallet" action="created" time="1 day ago" />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" className="w-full">
-                  View All Activity
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
+    <div>
+      <p>Credential: {credential.id}</p>
+      <>
+        <h2>Account</h2>
+        <p>Address: {smartAccountClient?.account?.address}</p>
 
-interface ActivityItemProps {
-  type: "donation" | "deposit" | "validation" | "wallet"
-  amount?: number
-  charity?: string
-  status?: string
-  action?: string
-  time: string
-}
-
-function ActivityItem({ type, amount, charity, status, action, time }: ActivityItemProps) {
-  return (
-    <div className="flex items-center gap-4">
-      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-        {type === "donation" && <Heart className="h-4 w-4" />}
-        {type === "deposit" && <Wallet className="h-4 w-4" />}
-        {type === "validation" && <Shield className="h-4 w-4" />}
-        {type === "wallet" && <Wallet className="h-4 w-4" />}
-      </div>
-      <div className="flex-1">
-        <p className="text-sm font-medium">
-          {type === "donation" && `Donated ${amount} USDC to ${charity}`}
-          {type === "deposit" && `Deposited ${amount} USDC to wallet`}
-          {type === "validation" && `Identity validation ${status}`}
-          {type === "wallet" && `Wallet ${action}`}
-        </p>
-        <p className="text-xs text-muted-foreground">{time}</p>
-      </div>
+        <h2>Send User Operation</h2>
+        <form onSubmit={sendUserOperation}>
+          <input name="to" placeholder="Address" />
+          <input name="value" placeholder="Amount (ETH)" />
+          <button type="submit">Send</button>
+          {txHash && <p>Transaction Hash: {txHash}</p>}
+        </form>
+      </>
     </div>
   )
 }
