@@ -5,7 +5,7 @@ import { createPublicClient } from 'viem'
 import { arbitrumSepolia, polygonAmoy } from 'viem/chains'
 import { toWebAuthnAccount } from 'viem/account-abstraction'
 import { WebAuthnMode, toCircleSmartAccount, toModularTransport, toPasskeyTransport, toWebAuthnCredential } from '@circle-fin/modular-wallets-core'
-import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS, USDC_ABI } from '../constants'
+import { POLYGON_AMOY_USDC_CONTRACT_ADDRESS, USDC_ABI } from '../constants'
 
 // Circle wallet configuration
 const clientKey = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
@@ -14,12 +14,12 @@ const clientUrl = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 
 // Create Circle transports
 const passkeyTransport = toPasskeyTransport(clientUrl, clientKey)
-const modularTransport = toModularTransport(`${clientUrl}/arbitrumSepolia`, clientKey)
-// const modularTransport = toModularTransport(`${clientUrl}/polygonAmoy`, clientKey)
+// const modularTransport = toModularTransport(`${clientUrl}/arbitrumSepolia`, clientKey)
+const modularTransport = toModularTransport(`${clientUrl}/polygonAmoy`, clientKey)
 
 // Create a public client
 const client = createPublicClient({
-  chain: arbitrumSepolia,
+  chain: polygonAmoy,
   // chain: polygonAmoy,
   transport: modularTransport,
 })
@@ -80,7 +80,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const balance = await client.readContract({
-        address: ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS,
+        address: POLYGON_AMOY_USDC_CONTRACT_ADDRESS,
         abi: USDC_ABI,
         functionName: 'balanceOf',
         args: [account.address]

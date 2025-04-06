@@ -1,10 +1,10 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { type P256Credential, type SmartAccount, WebAuthnAccount } from 'viem/account-abstraction'
+import { type P256Credential, type SmartAccount, toWebAuthnAccount, WebAuthnAccount } from 'viem/account-abstraction'
 import { WebAuthnMode, toCircleSmartAccount, toPasskeyTransport, toWebAuthnCredential } from '@circle-fin/modular-wallets-core'
 import { createPublicClient } from 'viem'
-import { arbitrumSepolia } from 'viem/chains'
+import { polygonAmoy } from 'viem/chains'
 import { toModularTransport } from '@circle-fin/modular-wallets-core'
 
 const CLIENT_KEY = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_KEY as string
@@ -12,11 +12,11 @@ const CLIENT_URL = process.env.NEXT_PUBLIC_CIRCLE_CLIENT_URL as string
 
 // Create Circle transports
 const passkeyTransport = toPasskeyTransport(CLIENT_URL, CLIENT_KEY)
-const modularTransport = toModularTransport(`${CLIENT_URL}/arbitrumSepolia`, CLIENT_KEY)
+const modularTransport = toModularTransport(`${CLIENT_URL}/polygonAmoy`, CLIENT_KEY)
 
 // Create a public client
 const client = createPublicClient({
-  chain: arbitrumSepolia,
+  chain: polygonAmoy,
   transport: modularTransport,
 })
 

@@ -3,9 +3,10 @@
 import { v4 as uuidv4 } from 'uuid'
 import { type Hex, parseUnits, encodeFunctionData } from 'viem'
 import axios from 'axios'
-import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS } from '../constants'
+import { ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS, POLYGON_AMOY_GAS_AMOUNT, POLYGON_AMOY_USDC_CONTRACT_ADDRESS } from '../constants'
 import { useArbitrumSepoliaSmartAccountBundlerClient } from '../hooks/use-arbitrum-sepolia-smart-account-bundler-client'
 import { useEthereumSepoliaSmartAccountBundlerClient } from '../hooks/use-eth-sepolia-smart-account-bundler-client'
+import { usePolygonAmoySmartAccountBundlerClient } from '../hooks/use-polygon-amoy-smart-account-bundler-client'
 
 // Constants
 const POLICY_ENGINE_API_KEY = process.env.NEXT_PUBLIC_CIRCLE_POLICY_ENGINE_API_KEY as string
@@ -37,7 +38,8 @@ export async function donate(
   amount: number
 ): Promise<DonationResult> {
 
-  const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
+  // const { bundlerClient } = useArbitrumSepoliaSmartAccountBundlerClient()
+  const { bundlerClient } = usePolygonAmoySmartAccountBundlerClient()
   // const { bundlerClient } = useEtherkeumSepoliaSmartAccountBundlerClient()
   try {
     // Screen the organization address
@@ -67,12 +69,12 @@ export async function donate(
       account,
       calls: [
         {
-          to: ARBTRUM_SEPOLIA_USDC_CONTRACT_ADDRESS,
+          to: POLYGON_AMOY_USDC_CONTRACT_ADDRESS,
           data
         },
       ],
       paymaster: true,
-      maxPriorityFeePerGas: BigInt(4762500),
+      maxPriorityFeePerGas: BigInt(POLYGON_AMOY_GAS_AMOUNT),
     })
     console.log("User operation hash:", hash)
 
@@ -99,7 +101,8 @@ export async function donate(
     return {
       success: true,
       transactionHash: receipt.transactionHash,
-      explorerUrl: `https://sepolia.arbiscan.io/tx/${receipt.transactionHash}`
+      // explorerUrl: `https://sepolia.arbiscan.io/tx/${receipt.transactionHash}`
+      explorerUrl: `https://www.oklink.com/amoy/tx/${receipt.transactionHash}`
     }
   } catch (error) {
     console.error('Donation error:', error)

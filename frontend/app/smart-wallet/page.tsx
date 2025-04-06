@@ -246,11 +246,15 @@ export default function PasskeysDemo() {
   if (!credential)
     return (
       <>
+        <br />
+        <br />
         <button type="button" onClick={createCredential}>
           Create credential
           <br />
+          <br />
           {smartAccountClient?.account.address}
         </button>
+        <br />
         <button type="button" onClick={loginWithExistingCredential}>
           Login with existing credential
         </button>
@@ -259,10 +263,14 @@ export default function PasskeysDemo() {
 
   return (
     <div>
+        <br />
       <p>Credential: {credential.id}</p>
       <>
+        <br />
         <h2>Account</h2>
+        <br />
         <p>Address: {smartAccountClient?.account?.address}</p>
+        <br />
 
         <h2>Send User Operation</h2>
         <form onSubmit={sendUserOperation}>
