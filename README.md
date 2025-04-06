@@ -3,6 +3,11 @@
 A cutting-edge decentralized application (dApp) that leverages blockchain technology to create positive impact. 
 Absynth combines modern web technologies with smart contracts to deliver a seamless and secure decentralized experience.
 
+## Screenshots
+![](images/logo.png)
+![](images/donate.png)
+![](images/validate.png)
+
 ## 🌟 Features
 
 - Circle CCTP cross chain transfer, with customized hook
@@ -10,6 +15,24 @@ Absynth combines modern web technologies with smart contracts to deliver a seaml
 - Frontend web application built with modern technologies
 - Smart contracts for blockchain interaction
 - Secure and decentralized architecture
+
+### User Validation Requirements
+
+To ensure compliance and security, users must meet the following criteria:
+- Age: Must be 20 years or older
+- Nationality Restrictions: Cannot be a resident or citizen of:
+  - Iran
+  - Iraq
+  - North Korea
+  - Russia
+  - Syria
+  - Venezuela
+
+The validation process is completed through a simple verification flow:
+1. Scan QR code with mobile device
+2. Complete verification process
+3. Await confirmation
+4. Proceed with platform usage
 
 ## 🏗 Architecture
 
